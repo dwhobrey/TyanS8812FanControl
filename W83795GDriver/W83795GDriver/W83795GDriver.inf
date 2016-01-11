@@ -1,0 +1,93 @@
+; W83795GDriver.inf
+[Version]
+Signature="$WINDOWS NT$"
+Class="System"
+ClassGuid={4d36e97d-e325-11ce-bfc1-08002be10318}
+Provider=%VendorName%
+CatalogFile=W83795GDriver.cat
+DriverVer=1/10/2013,1.0.0.0
+PnpLockDown=0
+DriverPackageDisplayName=%PackageDescription%
+DriverPackageType=PlugAndPlay
+
+; ================= Class section =====================
+
+[ClassInstall32]
+Addreg=W83795GDriverClassReg
+
+[W83795GDriverClassReg]
+HKR,,,0,%ClassName%
+HKR,,Icon,,0
+HKR,,DeviceCharacteristics,0x10001,0x100 ;Use same security checks on relative opens
+HKR,,DeviceType,0x10001,0x00009C4A
+HKR,,Security,,"D:P(A;;GA;;;SY)(A;;GA;;;BA)" ;Allow generic all access to system and built-in Admin. 
+
+[Manufacturer]
+%VendorName%=Devices,NTAMD64
+
+; ================= Device Install section =====================
+
+; For XP and later
+[Devices.NTAMD64]
+%W83795GDriver.DRVDESC%=W83795GDriver_Inst,root\%DeviceID%
+
+[W83795GDriver_Inst.NT]
+CopyFiles=W83795GDriver.CopyFiles
+
+[W83795GDriver.CopyFiles]
+W83795GDriver.sys
+
+[W83795GDriver_Inst.NT.Services]
+AddService=W83795GDriver,0x00000002,W83795GDriver_Service
+
+
+[W83795GDriver_Service]
+DisplayName    = %W83795GDriver.SVCDESC%
+ServiceType    = 1               ; SERVICE_KERNEL_DRIVER
+StartType      = 3               ; SERVICE_DEMAND_START
+ErrorControl   = 1               ; SERVICE_ERROR_NORMAL
+ServiceBinary  = %12%\W83795GDriver.sys
+LoadOrderGroup = Extended Base
+
+
+[SourceDisksFiles]
+W83795GDriver.sys  = 1,,
+
+[SourceDisksNames]
+1 = %SourceName%,,,""
+
+; ----- Files ---------------------------
+
+[DestinationDirs]
+DefaultDestDir = 12
+W83795GDriver_Device_CoInstaller_CopyFiles = 11
+
+[W83795GDriver_Device.NT.CoInstallers]
+AddReg=W83795GDriver_Device_CoInstaller_AddReg
+CopyFiles=W83795GDriver_Device_CoInstaller_CopyFiles
+
+[W83795GDriver_Device_CoInstaller_AddReg]
+HKR,,CoInstallers32,0x00010000, "WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll,WdfCoInstaller"
+
+[W83795GDriver_Device_CoInstaller_CopyFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll
+
+[SourceDisksFiles]
+WdfCoInstaller$KMDFCOINSTALLERVERSION$.dll=1 ; make sure the number matches with SourceDisksNames
+
+[W83795GDriver_Device.NT.Wdf]
+KmdfService =  W83795GDriver, W83795GDriver_wdfsect
+
+[W83795GDriver_wdfsect]
+KmdfLibraryVersion = $KMDFVERSION$
+
+[Strings]
+VendorName = "Open Source"
+ClassName = "W83795G Drivers"
+DiskName = "W83795GDriver Installation Disk"
+PackageDescription = "W83795G Driver"
+W83795GDriver.DeviceDesc = "W83795GDriver Device"
+W83795GDriver.SVCDESC = "W83795GDriver Service"
+W83795GDriver.DRVDESC = "W83795G Driver"
+SourceName = "W83795G Install Disk"
+DeviceID = "W83795GDriver"

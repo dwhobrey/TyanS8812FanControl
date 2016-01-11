@@ -1,0 +1,92 @@
+<html>
+<head>
+<title>Tyan S8812 W83795G Fan Controller</title>
+</head>
+
+<body text="#000000" link="#0000ff" vlink="#800080" bgcolor="#ffffff">
+
+<h2><a name="W83795G">Accessing S8812 W83795G Hardware Monitor</a> </h2>
+
+<p>14 Jan 2013, Ver 1.0.</p>
+
+<h3>Summary</h3>
+<p>Utility to adjust fan controller parameters of W83795G on S8812.<br />
+The W83795Driver.sys kernel mode driver is for Microsoft Windows
+Srv2008 r2 and W8 or W7 x64.<br /></p>
+
+<h3>Building</h3>
+<ol>
+<li>Install WinDDK 8 and VS2012.</li>
+<li>A valid certificate is needed. 
+This utility currently uses a local certificate, 
+so you must turn on TESTSIGNING using bcdedit and reboot.
+See script SetTestMode.bat for command.
+</li>
+<li>Use VS2012 project to build.</li>
+<li>Use the install script to install the driver via devcon.</li>
+</ol>
+
+<h3>Tools</h3>
+<p>Use the 'cool' exe utility in the pkg dir to access the W83795G driver.<br />
+Parameters are in hex with no '0x' prefix. </p>
+
+<p><b>Testing W83795G access:</b></p>
+<p>cool -i<br />
+If successful, reports SMBus slave address and I2CADDR register value for the W83795G.</p>
+
+<p><b>Setting fan duty cycle:</b></p>
+<p><b>WARNING: Only use a lower duty cycle if the system thermal design permits it!</b></p>
+<p><b>NOTE: The BIOS fan profile is the same for all zones, so sensor temperatures
+must be equalized by adjusting each sensor's temperature offset where possible.
+Otherwise the duty cycle will not automatically increase until the lower sensed temperatures
+rise above the higher sensed temperatures.</b></p>
+
+<p>cool -d [num]<br />
+Reports or sets the fan duty cycle to percentage 'num', where num={5..99}.<br />
+The Smart Fan IV PWM/Temperature parameters are set using the BIOS formula:<br />
+&nbsp; pwm = 255 * p + 9 * (t - 42) * (1 - p),<br />
+where 'p' is (num/100), and 't' ranges over the temperature set: {42,46,50,54,58,62,66}.
+</p>
+
+<h3>Requirements to switch W83795G to SP5100 SMBus from AST2050</h3>
+<p>The driver / utility employs the following steps:</p>
+<ol>
+<li>Temporarily suspend BMC scannng of SMBus via IPMI commands:<br />
+<ol>
+  <li>suspend: {0xF8, 0x86, 0x80, 0x1E}.</li>
+  <li>resume: {0xF8, 0x86, 0x00, 0x01}.</li>
+</ol>
+</li>
+<li>Enable SmbusSel2, IMB GPIO 11/12 as SmBus Clk/Data,
+   via I2CBusConfig PCI reg, dev 14h fn 0, reg d0/d2, set bit 6.
+</li>
+<li>Note, the slave address of W83795G is actually 0x2c, 
+   not 0x58 as stated on S8812 schematic and in Nuvoton W83795G manual.
+</li> 
+<li>Read / write registers as required.</li>
+<li>Unselect SmbusSel2 by clearing bit 6. Resume BMC scanning.</li>
+</ol>
+
+<h3>Test Registers</h3>
+<p>
+Bank 0:<br />
+0xfd = VenderId, should return 0x5c.<br />
+0xfe = ChipId, should return 0x79.<br />
+</p>
+
+<h3>Contacts</h3>
+<p>
+Tyan: Andy Yang: andyts.yang@mic.com.tw.<br />
+SIV: Ray Hinchliffe: ray@rh-software.com.<br />
+AST2050 (bmc): Luke Chen: luke_chen@aspeedtech.com.<br />
+AMI MegaRAC IPMI stack: Sam Park: Samp@ami.com.<br />
+W83795G: www.nuvoton.com.<br />
+</p>
+
+<h3>References</h3>
+<p>
+See register manual for W83795G available at www.nuvoton.com.
+</p>
+</body>
+</html>
+
